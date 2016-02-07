@@ -1,0 +1,22 @@
+{
+  "name": "meetup-proxy-aws-lambda",
+  "version": "0.0.1",
+  "description": "aws lambda proxy for the meetup.com api",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node tests"
+  },
+  "keywords": [
+    "meetup",
+    "aws",
+    "lambda",
+    "proxy",
+    "meetup.com",
+    "api"
+  ],
+  "author": "Open Austin",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.69.0"
+  }
+}
