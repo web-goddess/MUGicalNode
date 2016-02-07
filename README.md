@@ -2,6 +2,16 @@
 
 A proxy for the [Meetup.com](http://meetup.com) API that lives in AWS Lambda & API Gateway. We're using this to embed the upcoming Open Austin events on our website.
 
+Give our Meetup.com proxy a whirl: https://lhtgmc37pi.execute-api.us-west-2.amazonaws.com/prod/meetup-proxy-aws-lambda.
+
+The reason this project exists is because:
+
+1. The Meetup.com widgets are ugly and only show one event.
+2. The Meetup.com API doesn't have a public endpoint to get events for a Meetup.
+3. I don't want to expose my Meetup.com API key publicly.
+
+Since my key is in the lambda, you might be able to do something evil with it. But because all this code does is call `/events?group_urlname=Open-Austin`, this should limit the damage. Hopefully.
+
 # Contributing
 
 First installing some things:
