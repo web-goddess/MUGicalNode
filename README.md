@@ -63,4 +63,4 @@ Have a question about this project? Open an issue or contact us on the Open Aust
 
 The code for this repository has been released into the public domain by Open Austin via the Unlicense.
 
-Created by @luqmaan.
+Created by [@luqmaan](https://github.com/luqmaan).
