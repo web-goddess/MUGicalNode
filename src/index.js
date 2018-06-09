@@ -1,6 +1,7 @@
 var request = require('request');
 var secrets = require('./secrets.json');
 var icalToolkit = require('ical-toolkit');
+var striptags = require('striptags');
 
 //Create a builder
 var builder = icalToolkit.createIcsFileBuilder();
@@ -57,9 +58,9 @@ function handler(event, context) {
               description += 'CANCELLED! ';
             }
             if (e.description) {
-              description += e.description.replace(/\r|\n/, '')
+              description += e.name + ' - ';
+              description += striptags(e.description.replace(/\r|\n/, ''));
             }
-
 
             //Add events
             builder.events.push({
