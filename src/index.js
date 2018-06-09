@@ -84,7 +84,7 @@ function handler(event, context) {
               url: e.event_url
             });
 
-            var result = icalToolkit.parseToJSON(builder.toString());
+            var result = builder.toString();
         }
         catch (e) {
             return context.fail({error: 'Could not parse body: ' + body});
