@@ -5,7 +5,7 @@ function handler(event, context) {
     var options = {
         url: 'https://api.meetup.com/2/events',
         qs: {
-            'group_urlname': 'Open-Government-Civic-Technology-Meetup-by-Open-Austin',
+            'group_urlname': 'Syd-Technology-Leaders',
             'key': secrets.meetup_api_key,
         },
     };
