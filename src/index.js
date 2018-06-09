@@ -59,8 +59,10 @@ function handler(event, context) {
             }
             if (e.description) {
               description += e.name + ' - ';
-              description += striptags(e.description.replace(/\r|\n/, ''));
+              description += striptags(e.description.replace(/\r|\n/, '')).substr(0,250);
+              description += '...\n\n'
             }
+            description += "Event URL: " + e.event_url;
 
             //Add events
             builder.events.push({
