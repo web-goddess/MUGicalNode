@@ -51,6 +51,15 @@ function handler(event, context) {
 
             var meetupevents = JSON.parse(body);
             var e = meetupevents.results[0];
+            var description = '';
+
+            if (e.status == 'cancelled') {
+              description += 'CANCELLED! ';
+            }
+            if (e.description) {
+              description += e.description.replace(/\r|\n/, '')
+            }
+
 
             //Add events
             builder.events.push({
@@ -67,9 +76,6 @@ function handler(event, context) {
 
               //Event identifier, Optional, default auto generated
               uid: 'event_' + e.id + '@meetup.com',
-
-              //Optional, The sequence number in update, Default: 0
-              sequence: null,
 
               //Location of event, optional.
               location: e.location,
