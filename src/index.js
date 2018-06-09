@@ -82,7 +82,7 @@ function handler(event, context) {
               location: e.location,
 
               //Optional description of event.
-              description: e.description,
+              description: description,
 
               //Status of event
               status: 'CONFIRMED',
