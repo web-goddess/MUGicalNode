@@ -64,6 +64,15 @@ function handler(event, context) {
             }
             description += "Event URL: " + e.event_url;
 
+            if (e.venue.name) {
+              location = e.venue.name;
+              if (e.venue.address_1) {
+                location += ' (' + e.venue.address_1 + ', ' + e.venue.city + ', ' + e.venue.localized_country_name + ')';
+              };
+            } else {
+              location = 'TBC';
+            }
+
             //Add events
             builder.events.push({
               //Event start time, Required: type Date()
@@ -81,7 +90,7 @@ function handler(event, context) {
               uid: 'event_' + e.id + '@meetup.com',
 
               //Location of event, optional.
-              location: e.location,
+              location: location,
 
               //Optional description of event.
               description: description,
