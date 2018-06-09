@@ -1,7 +1,7 @@
 {
-  "name": "meetup-proxy-aws-lambda",
+  "name": "MUGicalNode",
   "version": "0.0.1",
-  "description": "aws lambda proxy for the meetup.com api",
+  "description": "aws lambda script to generate ical from the meetup.com api",
   "main": "src/index.js",
   "scripts": {
     "test": "node tests"
@@ -14,7 +14,7 @@
     "meetup.com",
     "api"
   ],
-  "author": "Open Austin",
+  "author": "Kris Howard",
   "license": "ISC",
   "dependencies": {
     "ical-toolkit": "^1.0.9",
