@@ -13,6 +13,6 @@ zip -9r ../dist.zip *
 cd ..
 
 aws lambda update-function-code \
---function-name meetup-proxy-aws-lambda \
+--function-name MUGicalNode \
 --zip-file fileb://dist.zip \
 --publish
