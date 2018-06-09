@@ -17,6 +17,7 @@
   "author": "Open Austin",
   "license": "ISC",
   "dependencies": {
+    "ical-toolkit": "^1.0.9",
     "request": "^2.69.0"
   }
 }
