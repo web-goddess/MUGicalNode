@@ -127,7 +127,7 @@ function handler(event, context, callback) {
 
   function createcalendar(allevents, calendarready) {
     // set up calendar
-    builder.calname = 'Test Meetup Calendar';
+    builder.calname = targetlocation + ' Meetup Calendar';
     builder.timezone = 'australia/sydney';
     builder.tzid = 'australia/sydney';
     builder.method = 'REQUEST';
