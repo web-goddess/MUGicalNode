@@ -77,7 +77,7 @@ function handler(event, context, callback) {
 
   function geteventsforallgroups(groups, getalleventsdone) {
     var allevents = new Object();
-    async.each(groups, function(group, callback){
+    async.eachLimit(groups, 1, function(group, callback){
       geteventsforgroup(group, allevents, callback);
     }, function(err) {
       if(err) {
