@@ -6,3 +6,4 @@ outfile.txt
 secrets.json
 dist.zip
 dist
+package-lock.json
