@@ -79,7 +79,7 @@ function handler(event, context) {
         getalleventsdone(err);
       } else {
         console.log('All group requests have been processed successfully');
-        console.log(allevents);
+        //console.log(allevents);
         getalleventsdone(null, allevents);
       }
     });
