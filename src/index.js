@@ -17,100 +17,60 @@ builder.ignoreTZIDMismatch = true; //If TZID is invalid, ignore or not to ignore
 
 function handler(event, context) {
 
-    //Set up calendar
-    builder.calname = 'Test Meetup Calendar';
-    builder.timezone = 'australia/sydney';
-    builder.tzid = 'australia/sydney';
-    builder.method = 'REQUEST';
+  // set up calendar
+  builder.calname = 'Test Meetup Calendar';
+  builder.timezone = 'australia/sydney';
+  builder.tzid = 'australia/sydney';
+  builder.method = 'REQUEST';
 
-    //Get Location
-    var targetlocation = event.targetlocation;
-    console.log('Targetlocation:' + targetlocation);
+  // get location from event parameter
+  var targetlocation = event.targetlocation;
+  console.log('Targetlocation:' + targetlocation);
 
-    //Get events for particular group
-    var g = 'Girl-Geek-Sydney';
-    var options = {
-        url: 'https://api.meetup.com/2/events',
-        qs: {
-            'group_urlname': g,
-            'key': secrets.meetup_api_key,
-        },
+  // async process
+  async.waterfall([
+    getgroups,
+    //getevents,
+    //publishcalendar,
+  ], function (err, result) {
+    // result now equals 'done'
+  });
+
+  function getgroups(callback) {
+    var options1 = {
+      url: 'https://api.meetup.com/find/groups',
+      qs: {
+        'country': 'AU',
+        'upcoming_events': 'true',
+        'key': secrets.meetup_api_key,
+        'location': targetlocation + ', Australia',
+        //'topic_id': '48471,17628,15582,3833,84681,79740,21549,21441,18062,15167,10209,124668,116249',
+        'topic_id': '79740' // testing
+      },
     };
-
-    request(options, function(err, res, body) {
-        if (err) {
-            console.error(err, body);
-            return context.fail({error: err});
-        }
-        if (res.statusCode !== 200) {
-            console.error(body);
-            return context.fail({error: body});
-        }
-        try {
-            console.log('Getting events for ' + g + '\n\n');
-
-            var meetupevents = JSON.parse(body);
-
-            for (var i = 0, len = meetupevents.results.length; i < len; i++) {
-              var e = meetupevents.results[i];
-              var description = '';
-
-              if (e.status == 'cancelled') {
-                description += 'CANCELLED! ';
-              }
-              if (e.description) {
-                description += e.name + ' - ';
-                description += striptags(e.description.replace(/\r|\n/, '')).substr(0,250);
-                description += '...\n\n'
-              }
-              description += "Event URL: " + e.event_url;
-
-              if (e.venue.name) {
-                location = e.venue.name;
-                if (e.venue.address_1) {
-                  location += ' (' + e.venue.address_1 + ', ' + e.venue.city + ', ' + e.venue.localized_country_name + ')';
-                };
-              } else {
-                location = 'TBC';
-              }
-
-              //Add events
-              builder.events.push({
-                //Event start time, Required: type Date()
-                start: new Date(e.time),
-
-                //Event end time, Required: type Date()
-                end: new Date(),
-
-                //Event summary, Required: type String
-                summary: e.group.name,
-
-                //All Optionals Below
-
-                //Event identifier, Optional, default auto generated
-                uid: 'event_' + e.id + '@meetup.com',
-
-                //Location of event, optional.
-                location: location,
-
-                //Optional description of event.
-                description: description,
-
-                //Status of event
-                status: 'CONFIRMED',
-
-                //Url for event on core application, Optional.
-                url: e.event_url
-              });
-
-              var result = builder.toString();
-            }
-        }
-        catch (e) {
-            return context.fail({error: 'Could not parse body: ' + body});
-        }
-        return context.succeed(result);
+    request(options1, function(err, res, body) {
+      if (err) {
+          console.error(err, body);
+          return context.fail({error: err});
+      }
+      if (res.statusCode !== 200) {
+          console.error(body);
+          return context.fail({error: body});
+      }
+      try {
+        var meetupgroups = JSON.parse(body);
+      }
+      catch (e) {
+          return context.fail({error: 'Could not parse body: ' + body});
+      }
+      var groups = [];
+      for (var i = 0, len = meetupgroups.length; i < len; i++) {
+        groups.push(meetupgroups[i].urlname);
+      }
+      console.log(groups);
+      callback(null, groups);
     });
+  }
 }
 
 exports.handler = handler;
