@@ -10,4 +10,4 @@ var context = {
     }
 }
 
-handler.handler(event, context);
+handler.handler(event, context, function (err) { });
