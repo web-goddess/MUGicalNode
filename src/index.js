@@ -17,12 +17,6 @@ builder.ignoreTZIDMismatch = true; //If TZID is invalid, ignore or not to ignore
 
 function handler(event, context) {
 
-  // set up calendar
-  builder.calname = 'Test Meetup Calendar';
-  builder.timezone = 'australia/sydney';
-  builder.tzid = 'australia/sydney';
-  builder.method = 'REQUEST';
-
   // get location from event parameter
   var targetlocation = event.targetlocation;
   console.log('Targetlocation:' + targetlocation);
@@ -30,14 +24,15 @@ function handler(event, context) {
   // async process
   async.waterfall([
     getgroups,
-    //getevents,
+    geteventsforallgroups,
+    createcalendar,
     //publishcalendar,
   ], function (err, result) {
     // result now equals 'done'
   });
 
-  function getgroups(callback) {
-    var options1 = {
+  function getgroups(getgroupsdone) {
+    var options = {
       url: 'https://api.meetup.com/find/groups',
       qs: {
         'country': 'AU',
@@ -48,28 +43,149 @@ function handler(event, context) {
         'topic_id': '79740' // testing
       },
     };
-    request(options1, function(err, res, body) {
+    request(options, function(err, res, body) {
       if (err) {
-          console.error(err, body);
-          return context.fail({error: err});
+        console.error(err, body);
+        getgroupsdone(err);
+        return;
       }
       if (res.statusCode !== 200) {
-          console.error(body);
-          return context.fail({error: body});
+        console.error(body);
+        getgroupsdone('Bad status ' + res.statusCode + ' ' + body);
+        return;
       }
       try {
         var meetupgroups = JSON.parse(body);
       }
       catch (e) {
-          return context.fail({error: 'Could not parse body: ' + body});
+        getgroupsdone('Could not parse groups body: ' + body);
+        return;
       }
       var groups = [];
       for (var i = 0, len = meetupgroups.length; i < len; i++) {
         groups.push(meetupgroups[i].urlname);
       }
-      console.log(groups);
-      callback(null, groups);
+      getgroupsdone(null, groups);
     });
+  }
+
+  function geteventsforallgroups(groups, getalleventsdone) {
+    var allevents = new Object();
+    async.each(groups, function(group, callback){
+      geteventsforgroup(group, allevents, callback);
+    }, function(err) {
+      if(err) {
+        console.log('One of the group requests failed to process');
+        getalleventsdone(err);
+      } else {
+        console.log('All group requests have been processed successfully');
+        console.log(allevents);
+        getalleventsdone(null, allevents);
+      }
+    });
+  }
+
+  function geteventsforgroup(group,allevents,getgroupeventsdone){
+    //Get events for particular group
+    console.log('getting results for ' + group);
+    var options = {
+        url: 'https://api.meetup.com/2/events',
+        qs: {
+            'group_urlname': group,
+            'key': secrets.meetup_api_key,
+        },
+    };
+    request(options, function(err, res, body) {
+      if (err) {
+        console.error(err, body);
+        getgroupeventsdone(err);
+        return;
+      }
+      if (res.statusCode !== 200) {
+        console.error(body);
+        getgroupeventsdone('Bad status ' + res.statusCode + ' ' + body);
+        return;
+      }
+      try {
+        var meetupevents = JSON.parse(body);
+      }
+      catch (e) {
+        console.error(body);
+        getgroupeventsdone('Could not parse events body: ' + body);
+        return;
+      }
+      allevents[group] = meetupevents;
+      getgroupeventsdone();
+    });
+  }
+
+  function createcalendar(allevents, calendarready) {
+    // set up calendar
+    builder.calname = 'Test Meetup Calendar';
+    builder.timezone = 'australia/sydney';
+    builder.tzid = 'australia/sydney';
+    builder.method = 'REQUEST';
+
+    var flattenedevents = [];
+    Object.values(allevents).forEach(function(element) {
+      flattenedevents = flattenedevents.concat(element.results)
+    })
+
+    for (var i = 0, len = flattenedevents.length; i < len; i++) {
+      var e = flattenedevents[i];
+      var description = '';
+
+      if (e.status == 'cancelled') {
+        description += 'CANCELLED! ';
+      }
+      if (e.description) {
+        description += e.name + ' - ';
+        description += striptags(e.description.replace(/\r|\n/, '')).substr(0,250);
+        description += '...\n\n'
+      }
+      description += "Event URL: " + e.event_url;
+
+      if (e.venue.name) {
+        location = e.venue.name;
+        if (e.venue.address_1) {
+          location += ' (' + e.venue.address_1 + ', ' + e.venue.city + ', ' + e.venue.localized_country_name + ')';
+        };
+      } else {
+        location = 'TBC';
+      }
+
+      //Add events
+      builder.events.push({
+        //Event start time, Required: type Date()
+        start: new Date(e.time),
+
+        //Event end time, Required: type Date()
+        end: new Date(),
+
+        //Event summary, Required: type String
+        summary: e.group.name,
+
+        //All Optionals Below
+
+        //Event identifier, Optional, default auto generated
+        uid: 'event_' + e.id + '@meetup.com',
+
+        //Location of event, optional.
+        location: location,
+
+        //Optional description of event.
+        description: description,
+
+        //Status of event
+        status: 'CONFIRMED',
+
+        //Url for event on core application, Optional.
+        url: e.event_url
+      });
+    }
+    var result = builder.toString();
+    console.log(result);
+    calendarready(null, result);
   }
 }
 
