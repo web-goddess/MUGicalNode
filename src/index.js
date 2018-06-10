@@ -5,15 +5,11 @@ var striptags = require('striptags');
 var AWS = require('aws-sdk');
 var async = require('async');
 
-//Create a builder
-var builder = icalToolkit.createIcsFileBuilder();
-
 // get reference to S3 client
 var s3 = new AWS.S3();
 
-/*
- * Settings (All Default values shown below. It is optional to specify)
- * */
+// get reference to calendar builder
+var builder = icalToolkit.createIcsFileBuilder();
 builder.spacers = true; //Add space in ICS file, better human reading. Default: true
 builder.NEWLINE_CHAR = '\r\n'; //Newline char to use.
 builder.throwError = false; //If true throws errors, else returns error when you do .toString() to generate the file contents.
@@ -26,6 +22,10 @@ function handler(event, context) {
     builder.timezone = 'australia/sydney';
     builder.tzid = 'australia/sydney';
     builder.method = 'REQUEST';
+
+    //Get Location
+    var targetlocation = event.targetlocation;
+    console.log('Targetlocation:' + targetlocation);
 
     //Get events for particular group
     var g = 'Girl-Geek-Sydney';
