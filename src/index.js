@@ -15,10 +15,10 @@ builder.NEWLINE_CHAR = '\r\n'; //Newline char to use.
 builder.throwError = false; //If true throws errors, else returns error when you do .toString() to generate the file contents.
 builder.ignoreTZIDMismatch = true; //If TZID is invalid, ignore or not to ignore!
 
-function handler(event, context) {
+function handler(event, context, callback) {
 
   // get location from event parameter
-  var targetlocation = event.targetlocation;
+  var targetlocation = event.targetlocation || 'Sydney';
   console.log('Targetlocation:' + targetlocation);
 
   // async process
@@ -26,9 +26,15 @@ function handler(event, context) {
     getgroups,
     geteventsforallgroups,
     createcalendar,
-    //publishcalendar,
+    publishcalendar,
   ], function (err, result) {
-    // result now equals 'done'
+    if (err) {
+      console.error(err);
+      callback(err);
+    } else {
+      console.log('All done!');
+      callback(null);
+    }
   });
 
   function getgroups(getgroupsdone) {
@@ -191,8 +197,26 @@ function handler(event, context) {
       });
     }
     var result = builder.toString();
-    console.log(result);
     calendarready(null, result);
+  }
+
+  function publishcalendar(calendar, calendarpublished) {
+    var params = {
+      Body: calendar,
+      Bucket: 'krishoward-temp',
+      Key: targetlocation.toLowerCase() + 'mugs.ics',
+      ContentType: 'text/calendar'
+    };
+    s3.putObject(params, function(err) {
+     if (err) {
+       console.log(err, err.stack);
+       calendarpublished(err);
+     }
+     else {
+       console.log(calendar);
+       calendarpublished(null, calendar);
+    }
+   });
   }
 }
 
