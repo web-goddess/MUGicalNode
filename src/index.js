@@ -45,12 +45,12 @@ function handler(event, context) {
     };
     request(options, function(err, res, body) {
       if (err) {
-        console.error(err, body);
+        console.log(err);
         getgroupsdone(err);
         return;
       }
       if (res.statusCode !== 200) {
-        console.error(body);
+        console.log(body);
         getgroupsdone('Bad status ' + res.statusCode + ' ' + body);
         return;
       }
@@ -97,12 +97,12 @@ function handler(event, context) {
     };
     request(options, function(err, res, body) {
       if (err) {
-        console.error(err, body);
+        console.log(err);
         getgroupeventsdone(err);
         return;
       }
       if (res.statusCode !== 200) {
-        console.error(body);
+        console.log(body);
         getgroupeventsdone('Bad status ' + res.statusCode + ' ' + body);
         return;
       }
@@ -110,7 +110,7 @@ function handler(event, context) {
         var meetupevents = JSON.parse(body);
       }
       catch (e) {
-        console.error(body);
+        console.log(body);
         getgroupeventsdone('Could not parse events body: ' + body);
         return;
       }
@@ -134,6 +134,7 @@ function handler(event, context) {
     for (var i = 0, len = flattenedevents.length; i < len; i++) {
       var e = flattenedevents[i];
       var description = '';
+      var duration = '';
 
       if (e.status == 'cancelled') {
         description += 'CANCELLED! ';
@@ -144,6 +145,12 @@ function handler(event, context) {
         description += '...\n\n'
       }
       description += "Event URL: " + e.event_url;
+
+      if (e.duration) {
+  			duration = e.duration;
+  		} else {
+  			duration = 10800000;
+  		}
 
       if (e.venue.name) {
         location = e.venue.name;
@@ -160,7 +167,7 @@ function handler(event, context) {
         start: new Date(e.time),
 
         //Event end time, Required: type Date()
-        end: new Date(),
+        end: new Date(e.time+duration),
 
         //Event summary, Required: type String
         summary: e.group.name,
