@@ -17,8 +17,8 @@ function handler(event, context, callback) {
       'upcoming_events': 'true',
       'key': secrets.meetup_api_key,
       'location': targetlocation + ', Australia',
-      //topic_id': '48471,17628,15582,3833,84681,79740,21549,21441,18062,15167,10209,124668,116249',
-      'topic_id': '79740,17628,15582' // testing
+      'topic_id': '48471,17628,15582,3833,84681,79740,21549,21441,18062,15167,10209,124668,116249',
+      //'topic_id': '79740,17628,15582' // testing
     },
   };
   request(options, function(err, res, body) {

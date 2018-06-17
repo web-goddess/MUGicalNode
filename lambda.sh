@@ -1,23 +1,16 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
 
 if [ "$#" -ne 1 ]; then
   echo "Usage : ./build.sh lambdaName";
   exit 1;
 fi
 
-lambda=${1%/}; // # Removes trailing slashes
+lambda=${1%/};
 echo "Deploying $lambda";
-cd $lambda;
-if [ $? -eq 0 ]; then
-  echo "...."
-else
-  echo "Couldn't cd to directory $lambda. You may have mis-spelled the lambda/directory name";
-  exit 1
-fi
 
+rm -rf dist
 mkdir -p dist
 
 echo "npm installing...";
@@ -30,20 +23,19 @@ else
 fi
 
 cp -r node_modules dist
-cp -r src/original/. dist
-cp src/secrets.json dist
+cp -r src/$lambda/. dist
 
 echo "removing old zip"
 rm -rf dist.zip
 cd dist
 
 echo "creating a new zip file"
-zip -9r ../dist.zip *
+zip -9rq ../dist.zip *
 cd ..
 
 echo "Uploading $lambda...";
 aws lambda update-function-code \
---function-name MUGicalNode \
+--function-name $lambda \
 --zip-file fileb://dist.zip \
 --publish
 
