@@ -12,8 +12,8 @@ Breaking out the first step - getting all the meetup groups associated with vari
 
 ## To Do
 
-[] Implement a "getevents" Lambda that gets the events for each group in the queue and inserts them into a database. I plan to run this every few minutes throughout the day.
-[] Implement a "createcalender" Lambda that processes the database once per day and creates calendars for each city. These will be published on S3 and then the database purged.
+- [ ] Implement a "getevents" Lambda that gets the events for each group in the queue and inserts them into a database. I plan to run this every few minutes throughout the day.
+- [ ] Implement a "createcalender" Lambda that processes the database once per day and creates calendars for each city. These will be published on S3 and then the database purged.
 
 # License
 
