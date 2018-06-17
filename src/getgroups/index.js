@@ -33,7 +33,7 @@ function handler(event, context, callback) {
     try {
       var meetupgroups = JSON.parse(body);
       for (var i = 0, len = meetupgroups.length; i < len; i++) {
-        console.log('group: ' + JSON.stringify(meetupgroups[i].urlname);
+        console.log('group: ' + JSON.stringify(meetupgroups[i].urlname));
         var params = {
           MessageBody: JSON.stringify(meetupgroups[i].urlname),
           QueueUrl: QUEUE_URL
