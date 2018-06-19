@@ -24,6 +24,7 @@
     "async": "^2.6.1",
     "aws-sdk": "^2.254.1",
     "ical-toolkit": "^1.0.9",
+    "mysql": "^2.15.0",
     "request": "^2.69.0",
     "striptags": "^3.1.1"
   }
