@@ -1,65 +1,42 @@
-var request = require('request');
+var request = require('request-promise');
 var secrets = require('./secrets.json');
 var AWS = require('aws-sdk');
 var QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/613444755180/meetupgroups';
 var sqs = new AWS.SQS({region : 'us-east-1'});
-var async = require('async');
 
-function handler(event, context, callback) {
-
-  // get location from event parameter
-  var targetlocation = event.targetlocation || 'Sydney';
-  //console.log('Targetlocation:' + targetlocation);
-
-  var options = {
-    url: 'https://api.meetup.com/find/groups',
-    qs: {
-      'country': 'AU',
-      'upcoming_events': 'true',
-      'key': secrets.meetup_api_key,
-      'location': targetlocation + ', Australia',
-      'topic_id': '48471,17628,15582,3833,84681,79740,21549,21441,18062,15167,10209,124668,116249',
-      //'topic_id': '79740,17628,15582' // testing
-    },
-  };
-  request(options, function(err, res, body) {
-    if (err) {
-      console.log(err);
-      return context.fail(err);
+exports.handler = async function(event, context, callback) {
+  try {
+    var targetlocation = event.targetlocation || 'Sydney';
+    var options = {
+      url: 'https://api.meetup.com/find/groups',
+      qs: {
+        'country': 'AU',
+        'upcoming_events': 'true',
+        'key': secrets.meetup_api_key,
+        'location': targetlocation + ', Australia',
+        //'topic_id': '48471,17628,15582,3833,84681,79740,21549,21441,18062,15167,10209,124668,116249',
+        'topic_id': '79740' // testing
+      },
+    };
+    let grouprequest = await request(options);
+    if (grouprequest) {
+      console.log('Groups Received!')
+      var meetupgroups = JSON.parse(grouprequest);
+    } else {
+      console.log('No response from Meetup');
+      throw new Error('No response from Meetup');
     }
-    if (res.statusCode !== 200) {
-      console.log(body);
-      return context.fail('Bad status ' + res.statusCode + ' ' + body);
-    }
-    try {
-      var meetupgroups = JSON.parse(body);
-    }
-    catch (e) {
-      return context.fail('Could not parse groups body: ' + body);
-    }
-    async.each(meetupgroups, function(group, groupdone){
+    const queuedgroups = meetupgroups.map(function(group) {
       console.log('group: ' + JSON.stringify(group.urlname));
       var params = {
         MessageBody: JSON.stringify(group.urlname),
         QueueUrl: QUEUE_URL
       };
-      sqs.sendMessage(params, function(err,data){
-        if(err) {
-          console.log('error:',"Fail Send Message" + err);
-        } else {
-          console.log('data:',data.MessageId);
-        }
-        groupdone(err);
-      });
-    }, function(err){
-      if(err) {
-        console.log('One of the messages failed to send');
-        return context.fail(err);
-      } else {
-        return context.succeed('Success!');
-      }
+      sqs.sendMessage(params).promise();
     });
-  });
+    await Promise.all(queuedgroups);
+    context.succeed('Success!');
+  } catch (err) {
+    return context.fail(err);
+  }
 }
-
-exports.handler = handler;
