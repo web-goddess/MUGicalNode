@@ -1,86 +1,81 @@
-var request = require('request');
+var request = require('request-promise');
 var secrets = require('./secrets.json');
 var AWS = require('aws-sdk');
 var QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/613444755180/meetupgroups';
 var sqs = new AWS.SQS({region : 'us-east-1'});
-var mysql = require('mysql');
-var async = require('async');
+var pool = require('./database')
+var mysql = require('mysql')
 
-function handler(event, context, callback) {
-
-  /* var pool  = mysql.createPool({
-      host     : secrets.dbhost,
-      user     : secrets.dbuser,
-      password : secrets.dbpw,
-      database : secrets.dbname
-    }); */
-
-  async.waterfall([
-    getgroup,
-    getevents,
-    //saveevents,
-  ], function (err, result) {
-    if (err) {
-      console.error(err);
-      callback(err);
-    } else {
-      console.log('All done!');
-      callback(null);
-    }
-  });
-
-  function getgroup(getgroupdone) {
-    sqs.receiveMessage({
-      QueueUrl: QUEUE_URL,
-      MaxNumberOfMessages: '1'
-    }, function(err, data) {
-      if (err) {
-        console.log("Receive Error", err);
-        getgroupdone(err);
-      } else if (data.Messages) {
-        getgroupdone(null, JSON.parse(data.Messages[0].Body));
-      }
-    });
-  }
-
-  function getevents(group, geteventsdone){
-    console.log("Group: " + group);
-
-    var options = {
-      url: 'https://api.meetup.com/2/events',
-      qs: {
-          'group_urlname': group,
-          'key': secrets.meetup_api_key,
-      },
-    }
-    request(options, function(err, res, body) {
-      if (err) {
-        console.log(err);
-        geteventsdone(err);
-        return;
-      }
-      if (res.statusCode !== 200) {
-        console.log(body);
-        geteventsdone('Bad status ' + res.statusCode + ' ' + body);
-        return;
-      }
-      try {
-        var meetupevents = JSON.parse(body);
-        //console.log(meetupevents);
-        //console.log(res.headers);
-      }
-      catch (e) {
-        geteventsdone('Could not parse events body: ' + body);
-        return;
-      }
-      var events = [];
-      for (var i = 0, len = meetupevents.results.length; i < len; i++) {
-        events.push(meetupevents.results[i]);
-      }
-      //console.log(events);
-      geteventsdone(null, events);
+exports.handler = async function(event, context, callback) {
+  try {
+    let group = await getgroup();
+    let events = await getevents(group);
+    let result = await saveevents(events);
+    return context.succeed('Success!');
+  } catch (err) {
+    return context.fail(err);
+  } finally {
+    pool.end(function (err) {
+      // all connections in the pool have ended
     });
   }
 }
 
-exports.handler = handler;
+async function getgroup() {
+  let data = await sqs.receiveMessage({
+    QueueUrl: QUEUE_URL,
+    MaxNumberOfMessages: '1'
+  }).promise();
+  if (data.Messages) {
+    var group = JSON.parse(data.Messages[0].Body);
+    console.log('SQS Message Received: ', group);
+  } else {
+    throw new Error('Nothing in queue!');
+  }
+  let deleteParams = {
+    QueueUrl: QUEUE_URL,
+    ReceiptHandle: data.Messages[0].ReceiptHandle
+  };
+  let deletedgroup = await sqs.deleteMessage(deleteParams).promise();
+  if (deletedgroup) {
+    console.log('Message Deleted', deletedgroup);
+  } else {
+    throw new Error('Failed deletion!');
+  }
+  return group;
+}
+
+async function getevents(group){
+  let options = {
+    url: 'https://api.meetup.com/2/events',
+    qs: {
+        'group_urlname': group,
+        'key': secrets.meetup_api_key,
+        'page': 10,
+    },
+  }
+  console.log('Requesting events for ', group);
+  let meetuprequest = await request(options);
+  if (meetuprequest) {
+    console.log('Meetup Events Received!')
+    var meetupevents = JSON.parse(meetuprequest);
+    //console.log(meetupevents);
+    return meetupevents;
+  } else {
+    console.log('No response from Meetup');
+    throw new Error('No response from Meetup');
+  }
+}
+
+async function saveevents(listofevents) {
+  console.log('Count: ' + listofevents.results.length);
+  const queries = listofevents.results.map(function(event) {
+    var sql = "INSERT INTO meetupevents (meetupevents_data) VALUES (?)";
+    var inserts = [JSON.stringify(event)];
+    sql = mysql.format(sql, inserts);
+    return pool.query(sql);
+  });
+  await Promise.all(queries);
+  console.log('DB writes done!');
+  return;
+}
