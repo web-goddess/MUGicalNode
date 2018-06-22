@@ -74,7 +74,7 @@ async function saveevents(listofevents) {
     };
     return sqs.sendMessage(params).promise();
   });
-  //await Promise.all(queuedevents);
+  await Promise.all(queuedevents);
   console.log('SQS logging done!');
   return;
 }
