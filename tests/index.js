@@ -1,4 +1,4 @@
-var handler = require('../src/getgroups');
+var handler = require('../src/getevents');
 
 var event = {};
 var context = {
