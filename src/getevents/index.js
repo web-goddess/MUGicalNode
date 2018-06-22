@@ -66,13 +66,15 @@ async function getevents(group){
 async function saveevents(listofevents) {
   console.log('Count: ' + listofevents.results.length);
   const queuedevents = listofevents.results.map(function(event) {
+    var city = event.venue.city.substring(0,3);
+    var queue_url = 'https://sqs.us-east-1.amazonaws.com/613444755180/meetups' + city;
     var params = {
       MessageBody: JSON.stringify(event),
-      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/613444755180/meetupevents'
+      QueueUrl: queue_url
     };
     return sqs.sendMessage(params).promise();
   });
-  await Promise.all(queuedevents);
+  //await Promise.all(queuedevents);
   console.log('SQS logging done!');
   return;
 }
