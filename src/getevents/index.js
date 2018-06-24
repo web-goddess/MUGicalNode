@@ -57,22 +57,33 @@ async function getevents(group){
 
 async function saveevents(listofevents) {
   console.log('Count: ' + listofevents.results.length);
-  const queuedevents = listofevents.results.map(function(event) {
-    var params = {
-      Item: {
-       "meetup_id": event.id,
-       "location": "Sydney",
-       "event": event
-      },
-      TableName: "meetups"
-     };
-    return dynamodb.put(params).promise();
+  var params = {
+    RequestItems: {
+      "meetups": []
+    }
+  };
+  listofevents.results.forEach(event => {
+    params.RequestItems.meetups.push( {
+      PutRequest: {
+        Item: {
+          "meetup_id": event.id,
+          "location": "Sydney",
+          "event": event
+        }
+      }
+    });
   });
-  await Promise.all(queuedevents)
-    .then(success => {
-      console.log('DB writes done!');
-    }, error => {
-      console.log(error)
+  await dynamodb.batchWrite(params).promise()
+    .then(function(data) {
+      let itemsLost = data.UnprocessedItems;
+      if (itemsLost.constructor === Object && Object.keys(itemsLost).length === 0) {
+        console.log("DB writes succeeded!");
+      } else {
+        throw new Error('One event failed!');
+      }
+    }, function(err) {
+      console.log(err);
+      throw new Error('All DB writes failed!');
     });
   return;
 }
