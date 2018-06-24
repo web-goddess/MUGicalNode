@@ -61,6 +61,11 @@ async function getevents(group){
 
 async function saveevents(listofevents, location) {
   console.log('Count: ' + listofevents.results.length);
+  //Setting deletedate to 12:00:01am tomorrow
+  let tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate()+1);
+  tomorrow.setHours(0, 0, 1);
+  let deleteddate = tomorrow.getTime();
   if (listofevents.results.length == 0) {
     console.log('No results to write!');
     return;
@@ -76,7 +81,8 @@ async function saveevents(listofevents, location) {
         Item: {
           "meetup_id": event.id,
           "location": location,
-          "event": event
+          "event": event,
+          "deletedate": deleteddate
         }
       }
     });
