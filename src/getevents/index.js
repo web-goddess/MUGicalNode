@@ -60,10 +60,11 @@ async function saveevents(listofevents) {
   const queuedevents = listofevents.results.map(function(event) {
     var params = {
       Item: {
-       "meetupid": event.id,
+       "meetup_id": event.id,
+       "location": "Sydney",
        "event": event
       },
-      TableName: "meetupevents"
+      TableName: "meetups"
      };
     return dynamodb.put(params).promise();
   });
