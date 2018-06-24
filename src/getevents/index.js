@@ -7,9 +7,9 @@ var sqs = new AWS.SQS({region : 'us-east-1'});
 exports.handler = async function(event, context, callback) {
   try {
     let group = await getgroup();
-    if (group.group) {
-      let events = await getevents(group.group);
-      let result = await saveevents(events);
+    if (group) {
+      let events = await getevents(group.urlname);
+      let result = await saveevents(events, group.location);
       let deletion = await deletegroup(group.deletehandle);
     }
     return context.succeed('Success!');
@@ -30,7 +30,11 @@ async function getgroup() {
     //console.log('Nothing in queue!');
     return;
   }
-  return {"group": group, "deletehandle": data.Messages[0].ReceiptHandle};
+  return {
+    "urlname": group.urlname,
+    "location": group.location,
+    "deletehandle": data.Messages[0].ReceiptHandle
+  };
 }
 
 async function getevents(group){
@@ -55,8 +59,12 @@ async function getevents(group){
   }
 }
 
-async function saveevents(listofevents) {
+async function saveevents(listofevents, location) {
   console.log('Count: ' + listofevents.results.length);
+  if (listofevents.results.length == 0) {
+    console.log('No results to write!');
+    return;
+  }
   var params = {
     RequestItems: {
       "meetups": []
@@ -67,7 +75,7 @@ async function saveevents(listofevents) {
       PutRequest: {
         Item: {
           "meetup_id": event.id,
-          "location": "Sydney",
+          "location": location,
           "event": event
         }
       }
