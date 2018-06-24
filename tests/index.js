@@ -1,4 +1,4 @@
-var handler = require('../src/getevents');
+var handler = require('../src/makecalendar');
 
 var event = {};
 var context = {
