@@ -29,7 +29,7 @@ exports.handler = async function(event, context, callback) {
     const queuedgroups = meetupgroups.map(function(group) {
       console.log('group: ' + JSON.stringify(group.urlname));
       var params = {
-        MessageBody: JSON.stringify(group.urlname),
+        MessageBody: JSON.stringify({"urlname": group.urlname, "location": targetlocation}),
         QueueUrl: QUEUE_URL
       };
       return sqs.sendMessage(params).promise();
