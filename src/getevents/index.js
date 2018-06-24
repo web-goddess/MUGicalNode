@@ -1,14 +1,16 @@
 var request = require('request-promise');
 var secrets = require('./secrets.json');
 var AWS = require('aws-sdk');
+var dynamodb = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 var sqs = new AWS.SQS({region : 'us-east-1'});
 
 exports.handler = async function(event, context, callback) {
   try {
     let group = await getgroup();
-    if (group) {
-      let events = await getevents(group);
+    if (group.group) {
+      let events = await getevents(group.group);
       let result = await saveevents(events);
+      let deletion = await deletegroup(group.deletehandle);
     }
     return context.succeed('Success!');
   } catch (err) {
@@ -28,17 +30,7 @@ async function getgroup() {
     //console.log('Nothing in queue!');
     return;
   }
-  let deleteParams = {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/613444755180/meetupgroups',
-    ReceiptHandle: data.Messages[0].ReceiptHandle
-  };
-  let deletedgroup = await sqs.deleteMessage(deleteParams).promise();
-  if (deletedgroup) {
-    console.log('Message Deleted', deletedgroup);
-  } else {
-    throw new Error('Failed deletion!');
-  }
-  return group;
+  return {"group": group, "deletehandle": data.Messages[0].ReceiptHandle};
 }
 
 async function getevents(group){
@@ -66,15 +58,33 @@ async function getevents(group){
 async function saveevents(listofevents) {
   console.log('Count: ' + listofevents.results.length);
   const queuedevents = listofevents.results.map(function(event) {
-    var city = event.venue.city.substring(0,3);
-    var queue_url = 'https://sqs.us-east-1.amazonaws.com/613444755180/meetups' + city;
     var params = {
-      MessageBody: JSON.stringify(event),
-      QueueUrl: queue_url
-    };
-    return sqs.sendMessage(params).promise();
+      Item: {
+       "meetupid": event.id,
+       "event": event
+      },
+      TableName: "meetupevents"
+     };
+    return dynamodb.put(params).promise();
   });
-  await Promise.all(queuedevents);
-  console.log('SQS logging done!');
+  await Promise.all(queuedevents)
+    .then(success => {
+      console.log('DB writes done!');
+    }, error => {
+      console.log(error)
+    });
   return;
+}
+
+async function deletegroup(deletehandle) {
+    let deleteParams = {
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/613444755180/meetupgroups',
+    ReceiptHandle: deletehandle
+  };
+  let deletedgroup = await sqs.deleteMessage(deleteParams).promise();
+  if (deletedgroup) {
+    console.log('Group Deleted', deletedgroup);
+  } else {
+    throw new Error('Failed deletion!');
+  }
 }
