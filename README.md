@@ -2,6 +2,51 @@
 
 An attempt to implement my [MUGicalPHP calendar generation script](https://github.com/web-goddess/MUGicalPHP) to run as a collection of AWS Lambda serverless functions.
 
+## General
+### Installation
+The basis for this app came from Open Austin's [meetup-proxy-aws-lambda](https://github.com/open-austin/meetup-proxy-aws-lambda). I've broken it up into three separate lambda functions, each of which lives in its own directory within `src`:
+
+* `src\getgroups`
+* `src\getevents`
+* `src\makecalendar`
+
+After you clone the repo, you'll need to install some stuff:
+
+```
+npm install
+npm install aws-sdk
+npm install request-promise
+npm install ical-toolkit
+npm install striptags
+```
+
+You need to go to Meetup and [retrieve your API key](https://secure.meetup.com/meetup_api/key/). Then add a `secrets.json` file to each `src` directory that looks like this (being sure to paste in your key):
+
+```
+{
+    "meetup_api_key": "{yourmeetupkey}"
+}
+```
+
+### Testing
+
+If you want to test out one of the lambdas, you'll need to first install the [AWS CLI](https://aws.amazon.com/cli/) to your machine.
+
+Then update the `tests\index.js` file to point to the lambda you want to test.
+
+### Deployment
+
+If you haven't created the lambdas yet, do that first. You can just use the "Author from scratch" option for each one. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
+
+I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, and the relevant DynamoDB tables. (See below.)
+
+From the directory on your machine, run this (being sure to substitute in the name of your lambda/folder:
+
+```
+./lambda.sh {nameoflambda}
+```
+
+
 ## /src/getgroups
 
 This lambda gets all the meetup groups associated with various topics in a given location and sends them to an SQS queue. This runs once per day at 1am.
