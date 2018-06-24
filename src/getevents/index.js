@@ -65,7 +65,7 @@ async function saveevents(listofevents, location) {
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate()+1);
   tomorrow.setHours(0, 0, 1);
-  let deleteddate = tomorrow.getTime();
+  let deleteddate = Math.round(tomorrow.getTime() / 1000);
   if (listofevents.results.length == 0) {
     console.log('No results to write!');
     return;
