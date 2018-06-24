@@ -34,6 +34,12 @@ If you want to test out one of the lambdas, you'll need to first install the [AW
 
 Then update the `tests\index.js` file to point to the lambda you want to test.
 
+Then just run:
+
+```
+npm run test
+```
+
 ### Deployment
 
 If you haven't created the lambdas yet, do that first. You can just use the "Author from scratch" option for each one. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
