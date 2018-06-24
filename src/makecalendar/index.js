@@ -7,17 +7,22 @@ var s3 = new AWS.S3();
 
 exports.handler = async function(event, context, callback) {
   try {
-    var targetlocation = event.targetlocation || 'Melbourne';
+    var targetlocation = event.targetlocation || 'Hobart';
     let listofevents = await pullevents(targetlocation);
-    let calendar = await createcalendar(listofevents, targetlocation);
-    let result = await publishcalendar(calendar, targetlocation);
-    return context.succeed('Success!');
+    if (listofevents.length > 0) {
+      let calendar = await createcalendar(listofevents, targetlocation);
+      let result = await publishcalendar(calendar, targetlocation);
+      return context.succeed('Success!');
+    } else {
+      return context.fail('No events in the DB for ' + targetlocation);
+    }
   } catch (err) {
     return context.fail(err);
   }
 }
 
 async function pullevents(targetlocation) {
+  console.log('Retrieving events for ' + targetlocation);
   let eventslist = new Array();
   var params = {
     TableName : 'meetups',
@@ -35,11 +40,11 @@ async function pullevents(targetlocation) {
       eventslist.push(event.event);
     });
     if(data.LastEvaluatedKey) {
-      console.log("Loop! Not done yet!");
+      //console.log("Loop! Not done yet!");
       params.ExclusiveStartKey = data.LastEvaluatedKey;
       data = await dynamodb.query(params).promise();
     } else {
-      console.log("Loop is done!");
+      //console.log("Loop is done!");
       break;
     }
   }
