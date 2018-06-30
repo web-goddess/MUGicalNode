@@ -126,7 +126,7 @@ async function createcalendar(allevents, city) {
 async function publishcalendar(calendar, city) {
   var params = {
     Body: calendar,
-    Bucket: 'krishoward-temp',
+    Bucket: 'krishoward.org',
     Key: city.toLowerCase() + 'mugs.ics',
     ContentType: 'text/calendar'
   };
