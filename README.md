@@ -2,6 +2,24 @@
 
 An attempt to implement my [MUGicalPHP calendar generation script](https://github.com/web-goddess/MUGicalPHP) to run as a collection of AWS Lambda serverless functions.
 
+If you'd like to subscribe in your calendar application of choice, there are two options:
+
+## Individual Events
+These calendars include a separate event for every meetup. Depending on the city, that could involve a lot of events.
+* https://krishoward.org/sydneymugs.ics
+* https://krishoward.org/melbournemugs.ics
+* https://krishoward.org/brisbanemugs.ics
+* https://krishoward.org/perthmugs.ics
+* https://krishoward.org/hobartmugs.ics
+
+## Digests
+These calendars have a single all-day event for each day that includes all of the meetups as a list within the description. For full details on a meetup, you'll have to click on the provided URL.
+* https://krishoward.org/sydneymugs-digest.ics
+* https://krishoward.org/melbournemugs-digest.ics
+* https://krishoward.org/brisbanemugs-digest.ics
+* https://krishoward.org/perthmugs-digest.ics
+* https://krishoward.org/hobartmugs-digest.ics
+
 ## General
 ### Installation
 The basis for this app came from Open Austin's [meetup-proxy-aws-lambda](https://github.com/open-austin/meetup-proxy-aws-lambda). I've broken it up into three separate lambda functions, each of which lives in its own directory within `src`:
