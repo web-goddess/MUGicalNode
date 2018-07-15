@@ -96,7 +96,7 @@ This lambda retrieves a group from the queue and then calls the Meetup API to re
 
 ## /src/makecalendar
 
-This lambda retrieves all the events for a given location from the database and turns them into an iCal calendar. That's uploaded to S3. This runs once per day at 11pm.
+This lambda retrieves all the events for a given location from the database and turns them into two iCal calendars: one with lots of separate events and a digest that has one all-day event per day. These are uploaded to S3. This runs once per day at 11pm.
 
 ### Setup
 * You need to create an S3 bucket to write to.
