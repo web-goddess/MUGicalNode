@@ -139,7 +139,7 @@ async function createdigest(allevents, city) {
 
     var e = allevents[i];
     var eventdate = new Date(e.time);
-    eventdate = eventdate.toDateString();
+    eventdate = eventdate.toLocaleDateString('en-AU', {timeZone: 'Australia/' + city.toLowerCase()});
     if (!dayevents[eventdate]) {
       dayevents[eventdate] = [];
     }
