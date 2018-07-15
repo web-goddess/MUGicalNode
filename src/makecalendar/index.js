@@ -7,11 +7,13 @@ var s3 = new AWS.S3();
 
 exports.handler = async function(event, context, callback) {
   try {
-    var targetlocation = event.targetlocation || 'Hobart';
+    var targetlocation = event.targetlocation || 'Perth';
     let listofevents = await pullevents(targetlocation);
     if (listofevents.length > 0) {
       let calendar = await createcalendar(listofevents, targetlocation);
+      let digest = await createdigest(listofevents, targetlocation);
       let result = await publishcalendar(calendar, targetlocation);
+      let digestresult = await publishdigest(digest, targetlocation);
       return context.succeed('Success!');
     } else {
       return context.fail('No events in the DB for ' + targetlocation);
@@ -123,11 +125,92 @@ async function createcalendar(allevents, city) {
   return builder.toString();
 }
 
+async function createdigest(allevents, city) {
+  // set up calendar
+  var builder = icalToolkit.createIcsFileBuilder();
+  builder.calname = city + ' Meetup Digest Calendar';
+  builder.timezone = 'australia/' + city.toLowerCase();
+  builder.tzid = 'australia/' + city.toLowerCase();
+  builder.method = 'REQUEST';
+
+  var dayevents = {};
+
+  for (var i = 0, len = allevents.length; i < len; i++) {
+
+    var e = allevents[i];
+    var eventdate = new Date(e.time);
+    eventdate = eventdate.toDateString();
+    if (!dayevents[eventdate]) {
+      dayevents[eventdate] = [];
+    }
+    dayevents[eventdate].push(e);
+  }
+
+  for (var day in dayevents) {
+    var startdate = '';
+    var daydescription = '';
+    dayevents[day].sort(function (a, b) {
+      return a.time - b.time;
+    });
+    for (var i = 0, len = dayevents[day].length; i < len; i++) {
+      var m = dayevents[day][i];
+      var mdate = new Date(m.time);
+      var mtime = mdate.toLocaleTimeString('en-AU', {timeZone: 'Australia/' + city.toLowerCase()});
+      daydescription += mtime + ' ' + m.group.name + ' ' + m.event_url;
+      daydescription += '\n\n';
+      if (!startdate) {
+        startdate = mdate;
+      }
+    }
+    //Add events
+    builder.events.push({
+      //Event start time, Required: type Date()
+      start: startdate,
+
+      //Event end time, Required: type Date()
+      end: startdate,
+
+      //All Day flag
+      allDay: true,
+
+      //Event summary, Required: type String
+      summary: 'Today\'s Tech Meetups',
+
+      //All Optionals Below
+
+      //Optional description of event.
+      description: daydescription,
+
+      //Status of event
+      status: 'CONFIRMED',
+    });
+  }
+  console.log('Digest is ready!');
+  return builder.toString();
+}
+
 async function publishcalendar(calendar, city) {
   var params = {
     Body: calendar,
     Bucket: 'krishoward.org',
     Key: city.toLowerCase() + 'mugs.ics',
+    ContentType: 'text/calendar'
+  };
+  await s3.putObject(params).promise()
+  .then(function(data) {
+    console.log("Upload succeeded!");
+  }, function(err) {
+    console.log(err);
+    throw new Error('Upload failed!');
+  });
+  return;
+}
+
+async function publishdigest(calendar, city) {
+  var params = {
+    Body: calendar,
+    Bucket: 'krishoward.org',
+    Key: city.toLowerCase() + 'mugs-digest.ics',
     ContentType: 'text/calendar'
   };
   await s3.putObject(params).promise()
