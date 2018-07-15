@@ -7,7 +7,7 @@ var s3 = new AWS.S3();
 
 exports.handler = async function(event, context, callback) {
   try {
-    var targetlocation = event.targetlocation || 'Perth';
+    var targetlocation = event.targetlocation || 'Melbourne';
     let listofevents = await pullevents(targetlocation);
     if (listofevents.length > 0) {
       let calendar = await createcalendar(listofevents, targetlocation);
@@ -139,7 +139,7 @@ async function createdigest(allevents, city) {
 
     var e = allevents[i];
     var eventdate = new Date(e.time);
-    eventdate = eventdate.toLocaleDateString('en-AU', {timeZone: 'Australia/' + city.toLowerCase()});
+    eventdate = eventdate.toLocaleDateString('en-US', {timeZone: 'Australia/' + city});
     if (!dayevents[eventdate]) {
       dayevents[eventdate] = [];
     }
@@ -159,7 +159,8 @@ async function createdigest(allevents, city) {
       daydescription += mtime + ' ' + m.group.name + ' ' + m.event_url;
       daydescription += '\n\n';
       if (!startdate) {
-        startdate = mdate;
+        var parts = day.split('/');
+        startdate = new Date(Date.UTC(parts[2], parts[0]-1, parts[1]));
       }
     }
     //Add events
@@ -221,4 +222,8 @@ async function publishdigest(calendar, city) {
     throw new Error('Upload failed!');
   });
   return;
+}
+
+function addhours(date, hours) {
+    return new Date(date.getTime() + hours*60*60000);
 }
