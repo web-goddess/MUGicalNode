@@ -125,6 +125,7 @@ async function createcalendar(allevents, city) {
   return builder.toString();
 }
 
+// new function for Paul Woodward
 async function createdigest(allevents, city) {
   // set up calendar
   var builder = icalToolkit.createIcsFileBuilder();
