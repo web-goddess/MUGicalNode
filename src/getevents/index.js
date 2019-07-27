@@ -39,10 +39,9 @@ async function getgroup() {
 
 async function getevents(group){
   let options = {
-    url: 'https://api.meetup.com/2/events',
+    url: 'https://api.meetup.com/' + group + '/events',
     qs: {
-        'group_urlname': group,
-        'key': secrets.meetup_api_key,
+        'access_token': secrets.access_token,
         'page': 10,
     },
   }
@@ -60,13 +59,13 @@ async function getevents(group){
 }
 
 async function saveevents(listofevents, location) {
-  console.log('Count: ' + listofevents.results.length);
+  console.log('Count: ' + listofevents.length);
   //Setting deletedate to 12:00:01am tomorrow
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate()+1);
   tomorrow.setHours(0, 0, 1);
   let deleteddate = Math.round(tomorrow.getTime() / 1000);
-  if (listofevents.results.length == 0) {
+  if (listofevents.length == 0) {
     console.log('No results to write!');
     return;
   }
@@ -75,13 +74,14 @@ async function saveevents(listofevents, location) {
       "meetups": []
     }
   };
-  listofevents.results.forEach(event => {
+  listofevents.forEach(event => {
+    //console.log(event.id + ' ' + location + ' ' + event + ' ' + deleteddate);
     params.RequestItems.meetups.push( {
       PutRequest: {
         Item: {
           "meetup_id": event.id,
           "location": location,
-          "event": event,
+          "event": JSON.stringify(event),
           "deletedate": deleteddate
         }
       }
