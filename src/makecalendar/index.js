@@ -1,4 +1,3 @@
-var secrets = require('./secrets.json');
 var icalToolkit = require('ical-toolkit');
 var striptags = require('striptags');
 var AWS = require('aws-sdk');
@@ -7,7 +6,7 @@ var s3 = new AWS.S3();
 
 exports.handler = async function(event, context, callback) {
   try {
-    var targetlocation = event.targetlocation || 'Melbourne';
+    var targetlocation = event.targetlocation || 'Sydney';
     let listofevents = await pullevents(targetlocation);
     if (listofevents.length > 0) {
       let calendar = await createcalendar(listofevents, targetlocation);
@@ -39,7 +38,7 @@ async function pullevents(targetlocation) {
   var data = await dynamodb.query(params).promise();
   while (data.Items) {
     data.Items.forEach(event => {
-      eventslist.push(event.event);
+      eventslist.push(JSON.parse(event.event));
     });
     if(data.LastEvaluatedKey) {
       //console.log("Loop! Not done yet!");
@@ -75,7 +74,7 @@ async function createcalendar(allevents, city) {
       description += striptags(e.description.replace(/\r|\n/, '')).substr(0,250);
       description += '...\n\n'
     }
-    description += "Event URL: " + e.event_url;
+    description += "Event URL: " + e.link;
 
     if (e.duration) {
       duration = e.duration;
