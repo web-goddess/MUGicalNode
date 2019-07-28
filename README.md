@@ -95,6 +95,8 @@ This lambda gets all the meetup groups associated with various topics in a given
   * The retention period on the queue is set to 23 hours, which ensures that if something goes wrong, it gets purged before it runs again the next day.
   * The default visibility timeout on the queue is set to 5 minutes.
   * After 3 failed attempts to retrieve events, the group is sent to a dead letter queue.
+* Make sure the region in the lambda matches the one where you set up your SQS queue and your parameter store!
+* Make sure your lambda execution role has permissions to access the parameter store!
 * You need to set up a CloudWatch rule for each city to trigger the lambda to run on a cron schedule.
   * The target should be set to your lambda function.
   * You should configure the input to pass in a constant (JSON text): `{"targetlocation": "Brisbane"}`
@@ -106,6 +108,8 @@ This lambda retrieves a group from the queue and then calls the Meetup API to re
 ### Setup
 * You need to create a DynamoDB table called `meetups`.
   * You should enable the `Time to live attribute` and set the TTL attribute to `deletedate`.
+* Make sure the regions in the lambda matches where you set up your SQS queue, DynamoDB, and your parameter store!
+* Make sure your lambda execution role has permissions to access the parameter store!
 * You need to set up a CloudWatch rule to trigger the lambda to run every minute.
   * The target should be set to your lambda function.
 
@@ -115,10 +119,10 @@ This lambda retrieves all the events for a given location from the database and 
 
 ### Setup
 * You need to create an S3 bucket to write to.
+* Make sure the region in the lambda matches the one where you set up your DynamoDB table!
 * You need to set up a CloudWatch rule for each city to trigger the lambda to run on a cron schedule.
   * The target should be set to your lambda function.
   * You should configure the input to pass in a constant (JSON text): `{"targetlocation": "Brisbane"}`
-
 
 ## /src/MUGicalNode - DEPRECATED
 
