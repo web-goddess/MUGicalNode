@@ -3,7 +3,6 @@ node_modules
 npm-debug.log
 
 outfile.txt
-secrets.json
 dist.zip
 dist
 package-lock.json
