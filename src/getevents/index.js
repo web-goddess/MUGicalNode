@@ -1,8 +1,8 @@
-var request = require('request-promise');
-var secrets = require('./secrets.json');
-var AWS = require('aws-sdk');
-var dynamodb = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
-var sqs = new AWS.SQS({region : 'us-east-1'});
+const request = require('request-promise');
+const AWS = require('aws-sdk');
+const dynamodb = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
+const sqs = new AWS.SQS({region : 'us-east-1'});
+const ssm = new AWS.SSM({region : 'us-east-1'});
 
 exports.handler = async function(event, context, callback) {
   try {
@@ -38,10 +38,16 @@ async function getgroup() {
 }
 
 async function getevents(group){
+  let params = {
+    Name: 'accessToken',
+    WithDecryption: true
+  };
+  let tokenrequest = await ssm.getParameter(params).promise();
+  let access_token = tokenrequest.Parameter["Value"];
   let options = {
     url: 'https://api.meetup.com/' + group + '/events',
     qs: {
-        'access_token': secrets.access_token,
+        'access_token': access_token,
         'page': 10,
     },
   }
@@ -49,7 +55,7 @@ async function getevents(group){
   let meetuprequest = await request(options);
   if (meetuprequest) {
     console.log('Meetup Events Received!')
-    var meetupevents = JSON.parse(meetuprequest);
+    let meetupevents = JSON.parse(meetuprequest);
     //console.log(meetupevents);
     return meetupevents;
   } else {
@@ -69,7 +75,7 @@ async function saveevents(listofevents, location) {
     console.log('No results to write!');
     return;
   }
-  var params = {
+  let params = {
     RequestItems: {
       "meetups": []
     }
