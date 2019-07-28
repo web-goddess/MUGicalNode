@@ -47,7 +47,7 @@ Go to `auth\index.html` and replace `{key}` with the Key for your Meetup consume
 
 Then go to `auth\index.js` and replace `{key}` with the Key and `{secret}` with the Secret for your Meetup consumer app.
 
-Open a terminal and go to the `auth` directory and run `node index.js`. Then open a browser window and visit [http://localhost:8080](http://localhost:8080), where you should see the `index.html` landing page. Click on the “Login with github” link, and youll be redirected to the familiar OAuth page to register with Github. Go ahead and authenticate. Afterwards you will be redirected to [http://localhost:8080/oauth/redirect](http://localhost:8080/oauth/redirect), which does nothing, which is fine. However, have a look back in your terminal which should have logged four lines.
+Open a terminal and go to the `auth` directory and run `node index.js`. Then open a browser window and visit [http://localhost:8080](http://localhost:8080), where you should see the `index.html` landing page. Click on the “Login with github” link, and youll be redirected to the familiar OAuth page to register with Github. Go ahead and authenticate. Afterwards it'll try to redirect you to [http://localhost:8080/oauth/redirect](http://localhost:8080/oauth/redirect) and just hang since that doesn't exist. However, have a look back in your terminal which should have logged four lines.
 
 **requestToken:** {longcrypticstring}  
 **accessToken:** {longcrypticstring}  
@@ -62,7 +62,7 @@ The only one you need\* is the accessToken. Copy them all to be safe, and then y
 }
 ```
 
-\* Yep, I know that's weird. It should expire, right? But so far in my testing it hasn't. Implementing a lambda to refresh access is the next item on the To Do list, as it's bound to happen eventually.
+\* Yep, I know that's weird. It should expire, right? But so far in my testing it hasn't. Even if I reauthorise and get a new access token, the old one still works. 🤷‍♀️ Implementing a lambda to refresh access is the next item on the To Do list, as it's bound to happen eventually.
 
 ### Testing
 
