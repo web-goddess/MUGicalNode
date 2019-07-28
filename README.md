@@ -1,6 +1,6 @@
 # MUGicalNode
 
-An attempt to implement my [MUGicalPHP calendar generation script](https://github.com/web-goddess/MUGicalPHP) to run as a collection of AWS Lambda serverless functions.
+An implementation of my [MUGicalPHP calendar generation script](https://github.com/web-goddess/MUGicalPHP) that runs as a collection of AWS Lambda serverless functions.
 
 If you'd like to subscribe in your calendar application of choice, there are two options:
 
@@ -36,15 +36,33 @@ npm install aws-sdk
 npm install request-promise
 npm install ical-toolkit
 npm install striptags
+npm install express
+npm install axios
 ```
 
-You need to go to Meetup and [retrieve your API key](https://secure.meetup.com/meetup_api/key/). Then add a `secrets.json` file to each `src` directory that looks like this (being sure to paste in your key):
+### Getting OAuth credentials
+As Meetup have deprecated use of simple API keys, we have to jump through a few hoops to get authorised. (I'm indebted to [Soham Kamani's blog post](https://www.sohamkamani.com/blog/javascript/2018-06-24-oauth-with-node-js/) for showing how to do this.) Start by going to Meetup and [creating a new OAuth consumer](https://secure.meetup.com/meetup_api/oauth_consumers/). Set the Redirect URI to `http://localhost:8080/oauth/redirect`. Once you've created the consumer, you'll have a Key and a Secret.
+
+Go to `auth\index.html` and replace `{key}` with the Key for your Meetup consumer app.
+
+Then go to `auth\index.js` and replace `{key}` with the Key and `{secret}` with the Secret for your Meetup consumer app.
+
+Open a terminal and go to the `auth` directory and run `node index.js`. Then open a browser window and visit [http://localhost:8080](http://localhost:8080), where you should see the `index.html` landing page. Click on the “Login with github” link, and youll be redirected to the familiar OAuth page to register with Github. Go ahead and authenticate. Afterwards you will be redirected to [http://localhost:8080/oauth/redirect](http://localhost:8080/oauth/redirect), which does nothing, which is fine. However, have a look back in your terminal which should have logged four lines.
+
+**requestToken:** {longcrypticstring}
+**accessToken:** {longcrypticstring}
+**expiry:** 3600
+**refreshToken:** {longcrypticstring}
+
+The only one you need\* is the accessToken. Copy them all to be safe, and then you can Control-C to kill the webserver. Now add a `secrets.json` file to each of the `src\getgroups` and `src\getevents` directories that looks like this (being sure to paste in your key):
 
 ```
 {
-    "meetup_api_key": "{yourmeetupkey}"
+    "access_token": "{youraccesstoken}"
 }
 ```
+
+\* Yep, I know that's weird. It should expire, right? But so far in my testing it hasn't. Implementing a lambda to refresh access is the next item on the To Do list, as it's bound to happen eventually.
 
 ### Testing
 
@@ -86,7 +104,7 @@ This lambda gets all the meetup groups associated with various topics in a given
 
 ## /src/getevents
 
-This lambda retrieves a group from the queue and then calls the Meetup API to retrieve its upcoming events. These are saved to a DynamoDB database. This runs every minute, all the time.
+This lambda retrieves a group from the queue and then calls the Meetup API to retrieve its upcoming events. These are saved to a DynamoDB database. This runs every minute, all the time. Events will be deleted a day after they finish.
 
 ### Setup
 * You need to create a DynamoDB table called `meetups`.
