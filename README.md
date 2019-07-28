@@ -24,11 +24,11 @@ These calendars have a single all-day event for each day that includes all of th
 ### Installation
 The basis for this app came from Open Austin's [meetup-proxy-aws-lambda](https://github.com/open-austin/meetup-proxy-aws-lambda). I've broken it up into three separate lambda functions, each of which lives in its own directory within `src`:
 
-* `src\getgroups`
-* `src\getevents`
-* `src\makecalendar`
+* `src/getgroups`
+* `src/getevents`
+* `src/makecalendar`
 
-After you clone the repo, you'll need to install some stuff:
+There's also a special lamba that's used for refreshing your Meetup OAuth credentials when needed:
 
 ```
 npm install
@@ -40,12 +40,13 @@ npm install express
 npm install axios
 ```
 
-### Getting OAuth credentials
+### Getting initial OAuth credentials
+
 As Meetup have deprecated use of simple API keys, we have to jump through a few hoops to get authorised. (I'm indebted to [Soham Kamani's blog post](https://www.sohamkamani.com/blog/javascript/2018-06-24-oauth-with-node-js/) for showing how to do this.) Start by going to Meetup and [creating a new OAuth consumer](https://secure.meetup.com/meetup_api/oauth_consumers/). Set the Redirect URI to `http://localhost:8080/oauth/redirect`. Once you've created the consumer, you'll have a Key and a Secret.
 
-Go to `auth\index.html` and replace `{key}` with the Key for your Meetup consumer app.
+Go to `auth/index.html` and replace `{key}` with the Key for your Meetup consumer app.
 
-Then go to `auth\index.js` and replace `{key}` with the Key and `{secret}` with the Secret for your Meetup consumer app.
+Then go to `auth/index.js` and replace `{key}` with the Key and `{secret}` with the Secret for your Meetup consumer app.
 
 Open a terminal and go to the `auth` directory and run `node index.js`. Then open a browser window and visit [http://localhost:8080](http://localhost:8080), where you should see the `index.html` landing page. Click on the “Login with github” link, and youll be redirected to the familiar OAuth page to register with Github. Go ahead and authenticate. Afterwards it'll try to redirect you to [http://localhost:8080/oauth/redirect](http://localhost:8080/oauth/redirect) and just hang since that doesn't exist. However, have a look back in your terminal which should have logged four lines.
 
@@ -54,18 +55,17 @@ Open a terminal and go to the `auth` directory and run `node index.js`. Then ope
 **expiry:** 3600  
 **refreshToken:** {longcrypticstring}
 
-The only one you need\* is the accessToken. Copy them all to be safe, and then you can Control-C to kill the webserver.
-
-\* Yep, I know that's weird. It should expire, right? But so far in my testing it hasn't. Even if I reauthorise and get a new access token, the old one still works. 🤷‍♀️ Implementing a lambda layer to refresh access is the next item on the To Do list, as it's bound to happen eventually.
+Copy and paste them all somewhere, and then you can Control-C to kill the webserver.
 
 ### Systems Manager
-In the AWS console, go to Systems Manager and click on Parameter Store in the menu on the left. Click the button to Create a Parameter. Set the name as `accessToken`, Tier as standard, and Type as Secure String. Paste in your accessToken into the box for Value. You can leave all other fields the same. Click the Create Parameter button to save.
+
+In the AWS console, go to Systems Manager and click on Parameter Store in the menu on the left. You're going to create four new parameters: `accessToken`, `refreshToken`, `clientID`, `clientSecret`. For each one, set Tier as standard and Type as Secure String. Paste the relevant values into the boxes for Value. (`clientID` is your Meetup consumer Key, and `clientSecret` is your Meetup consumer Secret.) You can leave all other fields the same.
 
 ### Testing
 
 If you want to test out one of the lambdas, you'll need to first install the [AWS CLI](https://aws.amazon.com/cli/) to your machine.
 
-Then update the `tests\index.js` file to point to the lambda you want to test.
+Then update the `tests/index.js` file to point to the lambda you want to test.
 
 Then just run:
 
@@ -77,7 +77,7 @@ npm run test
 
 If you haven't created the lambdas yet, do that first. You can just use the "Author from scratch" option for each one. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
 
-I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, Systems Manager parameters, and the relevant DynamoDB tables. (See below.)
+I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, Systems Manager parameters (getParameter, get Parameters, and putParameter), and the relevant DynamoDB tables. (See below.)
 
 From the directory on your machine, run this (being sure to substitute in the name of your lambda/folder:
 
@@ -85,10 +85,11 @@ From the directory on your machine, run this (being sure to substitute in the na
 ./lambda.sh {nameoflambda}
 ```
 
-
 ## /src/getgroups
 
 This lambda gets all the meetup groups associated with various topics in a given location and sends them to an SQS queue. This runs once per day at 1am.
+
+TODO: if authorisation fails, refresh accessToken with Meetup...
 
 ### Setup
 * You need to create an SQS queue called `meetupgroups`.
@@ -104,6 +105,8 @@ This lambda gets all the meetup groups associated with various topics in a given
 ## /src/getevents
 
 This lambda retrieves a group from the queue and then calls the Meetup API to retrieve its upcoming events. These are saved to a DynamoDB database. This runs every minute, all the time. Events will be deleted a day after they finish.
+
+TODO: if authorisation fails, refresh accessToken with Meetup...
 
 ### Setup
 * You need to create a DynamoDB table called `meetups`.
