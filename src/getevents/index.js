@@ -62,7 +62,7 @@ async function saveevents(listofevents, location) {
   console.log('Count: ' + listofevents.length);
   //Setting deletedate to 12:00:01am tomorrow
   let tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate()+1);
+  tomorrow.setDate(tomorrow.getDate()+2);
   tomorrow.setHours(0, 0, 1);
   let deleteddate = Math.round(tomorrow.getTime() / 1000);
   if (listofevents.length == 0) {
