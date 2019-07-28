@@ -49,9 +49,9 @@ Then go to `auth\index.js` and replace `{key}` with the Key and `{secret}` with 
 
 Open a terminal and go to the `auth` directory and run `node index.js`. Then open a browser window and visit [http://localhost:8080](http://localhost:8080), where you should see the `index.html` landing page. Click on the “Login with github” link, and youll be redirected to the familiar OAuth page to register with Github. Go ahead and authenticate. Afterwards you will be redirected to [http://localhost:8080/oauth/redirect](http://localhost:8080/oauth/redirect), which does nothing, which is fine. However, have a look back in your terminal which should have logged four lines.
 
-**requestToken:** {longcrypticstring}
-**accessToken:** {longcrypticstring}
-**expiry:** 3600
+**requestToken:** {longcrypticstring}  
+**accessToken:** {longcrypticstring}  
+**expiry:** 3600  
 **refreshToken:** {longcrypticstring}
 
 The only one you need\* is the accessToken. Copy them all to be safe, and then you can Control-C to kill the webserver. Now add a `secrets.json` file to each of the `src\getgroups` and `src\getevents` directories that looks like this (being sure to paste in your key):
