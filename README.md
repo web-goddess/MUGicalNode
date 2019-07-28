@@ -54,15 +54,12 @@ Open a terminal and go to the `auth` directory and run `node index.js`. Then ope
 **expiry:** 3600  
 **refreshToken:** {longcrypticstring}
 
-The only one you need\* is the accessToken. Copy them all to be safe, and then you can Control-C to kill the webserver. Now add a `secrets.json` file to each of the `src\getgroups` and `src\getevents` directories that looks like this (being sure to paste in your key):
+The only one you need\* is the accessToken. Copy them all to be safe, and then you can Control-C to kill the webserver.
 
-```
-{
-    "access_token": "{youraccesstoken}"
-}
-```
+\* Yep, I know that's weird. It should expire, right? But so far in my testing it hasn't. Even if I reauthorise and get a new access token, the old one still works. 🤷‍♀️ Implementing a lambda layer to refresh access is the next item on the To Do list, as it's bound to happen eventually.
 
-\* Yep, I know that's weird. It should expire, right? But so far in my testing it hasn't. Even if I reauthorise and get a new access token, the old one still works. 🤷‍♀️ Implementing a lambda to refresh access is the next item on the To Do list, as it's bound to happen eventually.
+### Systems Manager
+In the AWS console, go to Systems Manager and click on Parameter Store in the menu on the left. Click the button to Create a Parameter. Set the name as `accessToken`, Tier as standard, and Type as Secure String. Paste in your accessToken into the box for Value. You can leave all other fields the same. Click the Create Parameter button to save.
 
 ### Testing
 
@@ -80,7 +77,7 @@ npm run test
 
 If you haven't created the lambdas yet, do that first. You can just use the "Author from scratch" option for each one. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
 
-I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, and the relevant DynamoDB tables. (See below.)
+I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, Systems Manager parameters, and the relevant DynamoDB tables. (See below.)
 
 From the directory on your machine, run this (being sure to substitute in the name of your lambda/folder:
 
