@@ -156,7 +156,7 @@ async function createdigest(allevents, city) {
       var m = dayevents[day][i];
       var mdate = new Date(m.time);
       var mtime = mdate.toLocaleTimeString('en-AU', {timeZone: 'Australia/' + city.toLowerCase()});
-      daydescription += mtime + ' ' + m.group.name + ' ' + m.event_url;
+      daydescription += mtime + ' ' + m.group.name + ' ' + m.link;
       daydescription += '\n\n';
       if (!startdate) {
         var parts = day.split('/');
