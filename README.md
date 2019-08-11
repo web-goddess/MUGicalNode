@@ -28,14 +28,20 @@ The basis for this app came from Open Austin's [meetup-proxy-aws-lambda](https:/
 * `src/getevents`
 * `src/makecalendar`
 
-There's also a special lamba that's used for refreshing your Meetup OAuth credentials when needed:
+There's also a lambda layer that includes common dependencies:
 
 ```
 npm install
 npm install aws-sdk
+npm install request
 npm install request-promise
 npm install ical-toolkit
 npm install striptags
+```
+
+There's also a special function that's used for refreshing your Meetup OAuth credentials when needed. It requires a couple other dependencies:
+
+```
 npm install express
 npm install axios
 ```
@@ -75,11 +81,15 @@ npm run test
 
 ### Deployment
 
-If you haven't created the lambdas yet, do that first. You can just use the "Author from scratch" option for each one. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
+First create the layer for your dependencies. Run `npm run build` which will reinstall any missing dependencies and create a zip file called `mugicalnode-layer.zip`. In the AWS console go to Lambda and then click the Layers option. Create a new layer `MugicalNodeDependencies` with the runtime `Node.js 8.10`. Click the option to upload the zip you just created and save the layer.
+
+Next create the lambda functions. You can just use the "Author from scratch" option for each one and paste in the relevant function. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
 
 I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, Systems Manager parameters (getParameter, get Parameters, and putParameter), and the relevant DynamoDB tables. (See below.)
 
-From the directory on your machine, run this (being sure to substitute in the name of your lambda/folder:
+Make sure your function is set up to use the layer you just created.
+
+Note: if you later update a function locally, you can deploy to AWS by running this command (being sure to substitute in the name of your lambda/folder:
 
 ```
 ./lambda.sh {nameoflambda}
