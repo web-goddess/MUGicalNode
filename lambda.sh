@@ -13,16 +13,6 @@ echo "Deploying $lambda";
 rm -rf dist
 mkdir -p dist
 
-echo "npm installing...";
-npm install --prune
-if [ $? -eq 0 ]; then
-  echo "done";
-else
-  echo "npm install failed";
-  exit 1;
-fi
-
-cp -r node_modules dist
 cp -r src/$lambda/. dist
 
 echo "removing old zip"
