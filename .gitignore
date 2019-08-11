@@ -2,7 +2,7 @@ node_modules
 .DS_Store
 npm-debug.log
 
-outfile.txt
 dist.zip
 dist
 package-lock.json
+mugicalnode-layer.zip

@@ -4,7 +4,8 @@
   "description": "aws lambda script to generate ical from the meetup.com api",
   "main": "src/index.js",
   "scripts": {
-    "test": "node tests"
+    "test": "node tests",
+    "build": "npm install && mkdir -p nodejs && cp -r node_modules nodejs/ && zip -r mugicalnode-layer.zip nodejs"
   },
   "keywords": [
     "meetup",
@@ -25,8 +26,8 @@
     "axios": "^0.19.0",
     "express": "^4.17.1",
     "ical-toolkit": "^1.0.9",
-    "request": "^2.69.0",
-    "request-promise": "^4.2.2",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
     "striptags": "^3.1.1"
   }
 }
