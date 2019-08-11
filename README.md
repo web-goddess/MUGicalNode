@@ -83,7 +83,7 @@ npm run test
 
 First create the layer for your dependencies. Run `npm run build` which will reinstall any missing dependencies and create a zip file called `mugicalnode-layer.zip`. In the AWS console go to Lambda and then click the Layers option. Create a new layer `MugicalNodeDependencies` with the runtime `Node.js 8.10`. Click the option to upload the zip you just created and save the layer.
 
-Next create the lambda functions. You can just use the "Author from scratch" option for each one and paste in the relevant function. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 3 minutes.
+Next create the lambda functions. You can just use the "Author from scratch" option for each one and paste in the relevant function. The runtime should be `Node.js 8.10`. The name of each lambda needs to match the name of a folder within `src`. I recommend setting the timeout to 30 seconds for each.
 
 I recommend setting up a new execution role. You'll need to make sure this role has access to CloudWatch Logs, S3, SQS, Systems Manager parameters (getParameter, get Parameters, and putParameter), and the relevant DynamoDB tables. (See below.)
 
@@ -104,8 +104,8 @@ TODO: if authorisation fails, refresh accessToken with Meetup...
 ### Setup
 * You need to create an SQS queue called `meetupgroups`.
   * The retention period on the queue is set to 23 hours, which ensures that if something goes wrong, it gets purged before it runs again the next day.
-  * The default visibility timeout on the queue is set to 5 minutes.
-  * After 3 failed attempts to retrieve events, the group is sent to a dead letter queue.
+  * The default visibility timeout on the queue is set to 1 minute.
+* Update the `QUEUE_URL` in the lambda function to match the URL of your queue.
 * Make sure the region in the lambda matches the one where you set up your SQS queue and your parameter store!
 * Make sure your lambda execution role has permissions to access the parameter store!
 * You need to set up a CloudWatch rule for each city to trigger the lambda to run on a cron schedule.
@@ -114,7 +114,7 @@ TODO: if authorisation fails, refresh accessToken with Meetup...
 
 ## /src/getevents
 
-This lambda retrieves a group from the queue and then calls the Meetup API to retrieve its upcoming events. These are saved to a DynamoDB database. This runs every minute, all the time. Events will be deleted a day after they finish.
+This lambda retrieves a group from the queue and then calls the Meetup API to retrieve its upcoming events. These are saved to a DynamoDB database. This lambda is triggered from the `meetupgroups` SQS queue. There should be no dead letter queue set; groups will retry until they succeed. Events will be deleted from the database a day after they finish.
 
 TODO: if authorisation fails, refresh accessToken with Meetup...
 
@@ -123,8 +123,7 @@ TODO: if authorisation fails, refresh accessToken with Meetup...
   * You should enable the `Time to live attribute` and set the TTL attribute to `deletedate`.
 * Make sure the regions in the lambda matches where you set up your SQS queue, DynamoDB, and your parameter store!
 * Make sure your lambda execution role has permissions to access the parameter store!
-* You need to set up a CloudWatch rule to trigger the lambda to run every minute.
-  * The target should be set to your lambda function.
+* Create a trigger on the lambda that uses the SQS queue `meetupgroups`. Set the batch size to 1.
 
 ## /src/makecalendar
 
