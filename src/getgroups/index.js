@@ -1,6 +1,7 @@
 const request = require('request-promise');
 const AWS = require('aws-sdk');
 const QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/613444755180/meetupgroups';
+var dynamodb = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 const sqs = new AWS.SQS({region : 'us-east-1'});
 const ssm = new AWS.SSM({region : 'us-east-1'});
 
@@ -13,6 +14,22 @@ exports.handler = async function(event, context, callback) {
     let tokenrequest = await ssm.getParameter(params).promise();
     let access_token = tokenrequest.Parameter["Value"];
     let targetlocation = event.targetlocation || 'Brisbane';
+    // Retrieve topics list from database
+    var configparams = {
+      TableName : 'appconfig',
+      KeyConditionExpression: 'appname = :appname AND my_key = :my_key',
+      ExpressionAttributeValues: {
+        ':appname': 'mugicalnode',
+        ':my_key': 'topics'
+      }
+    };
+    let topics = await dynamodb.query(configparams).promise();
+    let topicslist = topics.Items[0].my_values;
+    let topicsquery = "";
+    for(var i = 0; i < topicslist.length; i++){
+      topicsquery += topicslist[i].id + ',';
+    }
+    // Query events from database
     let options = {
       url: 'https://api.meetup.com/find/groups',
       qs: {
@@ -20,7 +37,7 @@ exports.handler = async function(event, context, callback) {
         'upcoming_events': 'true',
         'access_token': access_token,
         'location': targetlocation + ', Australia',
-        'topic_id': '48471,17628,15582,3833,84681,79740,21549,21441,18062,15167,10209,124668,116249,7029',
+        'topic_id': topicsquery,
         //'topic_id': '79740' // testing
       },
       resolveWithFullResponse: true,
