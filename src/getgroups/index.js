@@ -53,12 +53,15 @@ exports.handler = async function(event, context, callback) {
       console.log('No response from Meetup');
       throw new Error('No response from Meetup');
     }
+    let delay = 1;
     let queuedgroups = meetupgroups.map(function(group) {
       console.log('group: ' + JSON.stringify(group.urlname));
       let params = {
         MessageBody: JSON.stringify({"urlname": group.urlname, "location": targetlocation}),
+        DelaySeconds: delay,
         QueueUrl: QUEUE_URL
       };
+      delay = delay + 1;
       return sqs.sendMessage(params).promise();
     });
     await Promise.all(queuedgroups);
