@@ -16,18 +16,10 @@ exports.handler = async function(event, context, callback) {
       let result = await saveevents(events, location);
       let deletion = await deletegroup(deletehandle);
     }
-    await sleep(500);
     return context.succeed('Success!');
   } catch (err) {
-    await sleep(500);
     return context.fail(err);
   }
-}
-
-function sleep(ms){
-    return new Promise(resolve=>{
-        setTimeout(resolve,ms)
-    })
 }
 
 async function getevents(group){
