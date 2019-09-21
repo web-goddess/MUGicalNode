@@ -6,16 +6,18 @@ var s3 = new AWS.S3();
 
 exports.handler = async function(event, context, callback) {
   try {
-    var targetlocation = event.targetlocation || 'Sydney';
-    let listofevents = await pullevents(targetlocation);
+    let location = event.targetlocation.split(',');
+    let city = location[0] || 'Sydney';
+    let timezone = location[1] || 'sydney';
+    let listofevents = await pullevents(city);
     if (listofevents.length > 0) {
-      let calendar = await createcalendar(listofevents, targetlocation);
-      let digest = await createdigest(listofevents, targetlocation);
-      let result = await publishcalendar(calendar, targetlocation);
-      let digestresult = await publishdigest(digest, targetlocation);
+      let calendar = await createcalendar(listofevents, city, timezone);
+      let digest = await createdigest(listofevents, city, timezone);
+      let result = await publishcalendar(calendar, city);
+      let digestresult = await publishdigest(digest, city);
       return context.succeed('Success!');
     } else {
-      return context.fail('No events in the DB for ' + targetlocation);
+      return context.fail('No events in the DB for ' + city);
     }
   } catch (err) {
     return context.fail(err);
@@ -53,12 +55,12 @@ async function pullevents(targetlocation) {
   return eventslist;
 }
 
-async function createcalendar(allevents, city) {
+async function createcalendar(allevents, city, timezone) {
   // set up calendar
   var builder = icalToolkit.createIcsFileBuilder();
   builder.calname = city + ' Meetup Calendar';
-  builder.timezone = 'australia/' + city.toLowerCase();
-  builder.tzid = 'australia/' + city.toLowerCase();
+  builder.timezone = 'australia/' + timezone.toLowerCase();
+  builder.tzid = 'australia/' + timezone.toLowerCase();
   builder.method = 'REQUEST';
 
   for (var i = 0, len = allevents.length; i < len; i++) {
@@ -125,12 +127,12 @@ async function createcalendar(allevents, city) {
 }
 
 // new function for Paul Woodward
-async function createdigest(allevents, city) {
+async function createdigest(allevents, city, timezone) {
   // set up calendar
   var builder = icalToolkit.createIcsFileBuilder();
   builder.calname = city + ' Meetup Digest Calendar';
-  builder.timezone = 'australia/' + city.toLowerCase();
-  builder.tzid = 'australia/' + city.toLowerCase();
+  builder.timezone = 'australia/' + timezone.toLowerCase();
+  builder.tzid = 'australia/' + timezone.toLowerCase();
   builder.method = 'REQUEST';
 
   var dayevents = {};
@@ -139,7 +141,7 @@ async function createdigest(allevents, city) {
 
     var e = allevents[i];
     var eventdate = new Date(e.time);
-    eventdate = eventdate.toLocaleDateString('en-US', {timeZone: 'Australia/' + city});
+    eventdate = eventdate.toLocaleDateString('en-US', {timeZone: 'Australia/' + timezone});
     if (!dayevents[eventdate]) {
       dayevents[eventdate] = [];
     }
@@ -155,7 +157,7 @@ async function createdigest(allevents, city) {
     for (var i = 0, len = dayevents[day].length; i < len; i++) {
       var m = dayevents[day][i];
       var mdate = new Date(m.time);
-      var mtime = mdate.toLocaleTimeString('en-AU', {timeZone: 'Australia/' + city.toLowerCase()});
+      var mtime = mdate.toLocaleTimeString('en-AU', {timeZone: 'Australia/' + timezone.toLowerCase()});
       daydescription += mtime + ' ' + m.group.name + ' ' + m.link;
       daydescription += '\n\n';
       if (!startdate) {
