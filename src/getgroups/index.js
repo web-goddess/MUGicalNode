@@ -13,7 +13,9 @@ exports.handler = async function(event, context, callback) {
     };
     let tokenrequest = await ssm.getParameter(params).promise();
     let access_token = tokenrequest.Parameter["Value"];
-    let targetlocation = event.targetlocation || 'Brisbane';
+    let location = event.targetlocation.split(',');
+    let city = location[0] || 'Sydney';
+    let timezone = location[1] || 'sydney';
     // Retrieve topics list from database
     var configparams = {
       TableName : 'appconfig',
@@ -36,7 +38,7 @@ exports.handler = async function(event, context, callback) {
         'country': 'AU',
         'upcoming_events': 'true',
         'access_token': access_token,
-        'location': targetlocation + ', Australia',
+        'location': city + ', Australia',
         'topic_id': topicsquery,
         //'topic_id': '79740' // testing
       },
@@ -57,7 +59,7 @@ exports.handler = async function(event, context, callback) {
     let queuedgroups = meetupgroups.map(function(group) {
       console.log('group: ' + JSON.stringify(group.urlname));
       let params = {
-        MessageBody: JSON.stringify({"urlname": group.urlname, "location": targetlocation}),
+        MessageBody: JSON.stringify({"urlname": group.urlname, "location": city}),
         DelaySeconds: delay,
         QueueUrl: QUEUE_URL
       };
