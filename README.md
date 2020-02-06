@@ -11,6 +11,8 @@ These calendars include a separate event for every meetup. Depending on the city
 * https://krishoward.org/brisbanemugs.ics
 * https://krishoward.org/perthmugs.ics
 * https://krishoward.org/hobartmugs.ics
+* https://krishoward.org/newcastlemugs.ics
+* https://krishoward.org/goldcoastmugs.ics
 
 ## Digests
 These calendars have a single all-day event for each day that includes all of the meetups as a list within the description. For full details on a meetup, you'll have to click on the provided URL.
@@ -19,6 +21,8 @@ These calendars have a single all-day event for each day that includes all of th
 * https://krishoward.org/brisbanemugs-digest.ics
 * https://krishoward.org/perthmugs-digest.ics
 * https://krishoward.org/hobartmugs-digest.ics
+* https://krishoward.org/newcastlemugs-digest.ics
+* https://krishoward.org/goldcoastmugs-digest.ics
 
 ## General
 ### Installation
