@@ -1,0 +1,49 @@
+{
+  "Comment": "Creating MUGicalNode calendar each day",
+  "StartAt": "Get Cities",
+  "States": {
+    "Get Cities": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:613444755180:function:getcities",
+      "ResultPath": "$.Cities",
+      "Next": "For Loop Condition"
+    },
+    "For Loop Condition": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Not": {
+            "Variable": "$.Cities[0]",
+            "StringEquals": "Done"
+          },
+          "Next": "Make Calendar"
+        }
+      ],
+      "Default": "Finished"
+    },
+    "Make Calendar": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:613444755180:function:makecalendar",
+      "Parameters": {
+        "targetlocation.$": "$.Cities[0]"
+      },
+      "ResultPath": "$.lambdaresult",
+      "Next": "Pop Element from List"
+    },
+    "Pop Element from List": {
+      "Type": "Pass",
+      "Parameters": {
+        "Cities.$": "$.Cities[1:]"
+      },
+      "Next": "Wait 5 seconds"
+    },
+    "Wait 5 seconds": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "For Loop Condition"
+    },
+    "Finished": {
+      "Type": "Succeed"
+    }
+  }
+}
