@@ -1,0 +1,152 @@
+{
+  "appname": {
+    "S": "mugicalnode"
+  },
+  "my_key": {
+    "S": "topics"
+  },
+  "my_values": {
+    "L": [
+      {
+        "M": {
+          "id": {
+            "N": "17628"
+          },
+          "name": {
+            "S": "programming languages"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "48471"
+          },
+          "name": {
+            "S": "computer programming"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "15582"
+          },
+          "name": {
+            "S": "web development"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "3833"
+          },
+          "name": {
+            "S": "software development"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "84681"
+          },
+          "name": {
+            "S": "cryptography"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "79740"
+          },
+          "name": {
+            "S": "internet of things"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "21549"
+          },
+          "name": {
+            "S": "agile project management"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "21441"
+          },
+          "name": {
+            "S": "mobile development"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "18062"
+          },
+          "name": {
+            "S": "big data"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "15167"
+          },
+          "name": {
+            "S": "cloud computing"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "124668"
+          },
+          "name": {
+            "S": "computer security"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "10209"
+          },
+          "name": {
+            "S": "web technology"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "116249"
+          },
+          "name": {
+            "S": "IT management"
+          }
+        }
+      },
+      {
+        "M": {
+          "id": {
+            "N": "7029"
+          },
+          "name": {
+            "S": "javascript"
+          }
+        }
+      }
+    ]
+  }
+}
