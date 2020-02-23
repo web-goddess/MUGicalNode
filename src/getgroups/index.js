@@ -16,6 +16,7 @@ exports.handler = async function(event, context, callback) {
     let location = event.targetlocation.split(',');
     let city = location[0] || 'Sydney';
     let timezone = location[1] || 'sydney';
+    let country = location[2] || 'AU';
     // Retrieve topics list from database
     var configparams = {
       TableName : 'appconfig',
@@ -35,10 +36,11 @@ exports.handler = async function(event, context, callback) {
     let options = {
       url: 'https://api.meetup.com/find/groups',
       qs: {
-        'country': 'AU',
+        'country': country,
         'upcoming_events': 'true',
         'access_token': access_token,
-        'location': city + ', Australia',
+        'location': city + ', ' + country,
+        'radius': '25',
         'topic_id': topicsquery,
         //'topic_id': '79740' // testing
       },
