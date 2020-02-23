@@ -1,0 +1,19 @@
+{
+  "appname": {
+    "S": "mugicalnode"
+  },
+  "my_key": {
+    "S": "cities"
+  },
+  "my_values": {
+    "SS": [
+      "Brisbane,brisbane,AU",
+      "Gold Coast,brisbane,AU",
+      "Hobart,hobart,AU",
+      "Melbourne,melbourne,AU",
+      "Newcastle,sydney,AU",
+      "Perth,perth,AU",
+      "Sydney,sydney,AU"
+    ]
+  }
+}
