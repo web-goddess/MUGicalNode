@@ -148,10 +148,10 @@ This lambda retrieves all the events for a given location from the database and 
 To trigger these lambdas to run, we're going to set up two Step Functions (state machines).
 
 ### MUGicalNode
-Create a State Machine called 'MUGicalNode' using the 'Author with Code Snippets' option, and for the definition paste in the Amazon States Language from `sf-mugicalnode.txt`.
+Create a State Machine called 'MUGicalNode' using the 'Author with Code Snippets' option, and for the definition paste in the Amazon States Language from `sf-mugicalnode.txt`. You'll need to change the resource definitions to point your `getcities` and `getgroups` lambdas. It will call the `getcities` lambda, and then loop through it calling `getgroups` on each city.
 
 ### MUGicalNode-Calendar
-Create a State Machine called 'MUGicalNode-Calendar' using the 'Author with Code Snippets' option, and for the definition paste in the Amazon States Language from `sf-mugicalnodecal.txt`.
+Create a State Machine called 'MUGicalNode-Calendar' using the 'Author with Code Snippets' option, and for the definition paste in the Amazon States Language from `sf-mugicalnodecal.txt`. You'll need to change the resource definitions to point your `getcities` and `makecalendar` lambdas. It will call the `getcities` lambda, and then loop through it calling `makecalendar` on each city.
 
 ## CloudWatch Rules
 
