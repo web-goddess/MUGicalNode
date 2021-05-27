@@ -63,6 +63,7 @@ async function createcalendar(allevents, city, timezone, countrycode) {
   builder.calname = city + ' Meetup Calendar';
   if (countrycode == "AU") { country = "australia"; }
   if (countrycode == "DE") { country = "europe"; }
+  if (countrycode == "CH") { country = "europe"; }
   builder.timezone = country + '/' + timezone.toLowerCase();
   builder.tzid = country + '/' + timezone.toLowerCase();
   builder.method = 'REQUEST';
@@ -139,6 +140,7 @@ async function createdigest(allevents, city, timezone, countrycode) {
   builder.calname = city + ' Meetup Digest Calendar';
   if (countrycode == "AU") { country = "australia"; }
   if (countrycode == "DE") { country = "europe"; }
+  if (countrycode == "CH") { country = "europe"; }
   builder.timezone = country + '/' + timezone.toLowerCase();
   builder.tzid = country + '/' + timezone.toLowerCase();
   builder.method = 'REQUEST';
