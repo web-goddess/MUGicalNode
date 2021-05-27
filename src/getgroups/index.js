@@ -17,6 +17,7 @@ exports.handler = async function(event, context, callback) {
     let city = location[0] || 'Sydney';
     let timezone = location[1] || 'sydney';
     let country = location[2] || 'AU';
+    let radius = location[3] || '25';
     // Retrieve topics list from database
     var configparams = {
       TableName : 'appconfig',
@@ -40,7 +41,7 @@ exports.handler = async function(event, context, callback) {
         'upcoming_events': 'true',
         'access_token': access_token,
         'location': city + ', ' + country,
-        'radius': '25',
+        'radius': radius,
         'topic_id': topicsquery,
         //'topic_id': '79740' // testing
       },
