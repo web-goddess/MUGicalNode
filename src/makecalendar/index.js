@@ -142,6 +142,7 @@ async function createdigest(allevents, city, timezone, countrycode) {
   if (countrycode == "AU") { country = "australia"; }
   if (countrycode == "DE") { country = "europe"; }
   if (countrycode == "CH") { country = "europe"; }
+  if (countrycode == "EG") { country = "africa"; }
   builder.timezone = country + '/' + timezone.toLowerCase();
   builder.tzid = country + '/' + timezone.toLowerCase();
   builder.method = 'REQUEST';
